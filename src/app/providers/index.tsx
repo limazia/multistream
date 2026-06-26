@@ -1,8 +1,4 @@
-import { setDefaultOptions } from "date-fns";
-import { ptBR } from "date-fns/locale";
 import { BrowserRouter } from "react-router-dom";
-
-setDefaultOptions({ locale: ptBR });
 
 import { ComposeProviders, Toaster, TooltipProvider } from "@components";
 
