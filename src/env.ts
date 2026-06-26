@@ -7,10 +7,11 @@ const required = {
 };
 
 export const envSchema = z.object({
-  // App
   VITE_NODE_ENV: z
     .enum(["development", "qa", "production"])
     .default("development"),
+
+  VITE_TWITCH_PARENT: required.string("VITE_TWITCH_PARENT"),
 });
 
 export type Env = z.infer<typeof envSchema>;
