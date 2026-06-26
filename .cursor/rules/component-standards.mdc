@@ -1,0 +1,81 @@
+---
+description: Component architecture and TypeScript standards
+alwaysApply: true
+---
+
+# Component Standards
+
+Resumo mandatório de arquitetura. Detalhes, exemplos e checklists → `.cursor/docs/COMPONENT_GUIDELINES.md`.
+
+## Estrutura de pastas
+
+- `src/app/` — composição (`index.tsx`, `layouts/`, `providers/`, `router/`, `not-found.tsx`)
+- `src/features/{feature}/` — feature self-contained (`index.tsx`, `components/`, `hooks/`, `http/`, `schemas/`)
+- `src/shared/` — código compartilhado (`components/ui/`, `hooks/`, `lib/`, `schemas/`, `utils/`)
+- `src/assets/`, `src/styles/`, `src/env.ts`, `src/main.tsx`
+
+Referência canônica de feature: `src/features/users/`.
+
+## Path aliases
+
+Use sempre aliases — nunca `../../../`:
+
+| Alias | Caminho |
+| ----- | ------- |
+| `@/` | `src/` |
+| `@components` | `src/shared/components` |
+| `@lib` | `src/shared/lib` |
+| `@hooks` | `src/shared/hooks` |
+| `@utils` | `src/shared/utils` |
+| `@schemas` | `src/shared/schemas` |
+| `@assets` | `src/assets` |
+
+## Nomenclatura
+
+- Arquivos: `kebab-case` (`user-card.tsx`, `use-users.ts`, `user.schema.ts`, `get-users.ts`)
+- Componentes: `PascalCase` · funções/variáveis: `camelCase`
+- Página: `src/features/{feature}/index.tsx` exportando `{Feature}Page`
+- Sufixos: `.schema.ts`, `.layout.tsx`, `-skeleton.tsx`, `-error-alert.tsx`, `-query-status.tsx`, `use-*.ts`
+
+## Onde colocar cada coisa
+
+| Tipo | Caminho |
+| ---- | ------- |
+| UI base | `src/shared/components/ui/` |
+| Componente de feature | `src/features/{f}/components/` |
+| Página (entry da rota) | `src/features/{f}/index.tsx` |
+| Layout | `src/app/layouts/` |
+| Hook compartilhado | `src/shared/hooks/` |
+| Hook de feature | `src/features/{f}/hooks/` |
+| Schema compartilhado | `src/shared/schemas/` |
+| Schema de feature | `src/features/{f}/schemas/` |
+| Função HTTP de feature | `src/features/{f}/http/` |
+
+Não mova código de feature para `shared/` sem reuso real entre 2+ features.
+
+## Regras de componentes
+
+- Reuse `@components/ui` antes de criar novos
+- Props de componente → sempre `interface` (ex.: `UserCardProps`); `type` só quando necessário (union, utility, infer)
+- Tipe parâmetros e retornos não-triviais · use `import type` para imports só-de-tipo
+- Prefira named exports (`export function`)
+- Componentes grandes → subcomponentes/hooks dentro da feature
+- Estados de query → componha `*-skeleton.tsx`, `*-error-alert.tsx`, `*-query-status.tsx` + barrel `components/index.ts`
+- HTTP, TanStack Query, validação, env → ver `critical-rules.mdc`
+
+## TypeScript e comentários
+
+- **Props** → `interface`, nunca `type`. **Unions/utilities** → `type` quando precisar (`type Status = "online" | "offline"`)
+- **Sem comentários** dentro de `interface`/`type`, acima de funções React, ou no JSX (`{/* Hero */}`)
+- **JSDoc permitido** em `src/shared/utils/` e `src/shared/components/` — descreve o que faz (hover no IDE)
+
+## Estilização e imports
+
+- Tailwind v4 + `cn()` de `@utils/cn` · `cva` para variantes · aceite `className?: string`
+- Tokens do tema em `src/styles/globals.css` (`bg-background`, `text-foreground`, etc.)
+- Ordem de imports: externos → `import type` → aliases → relativos (grupos separados por linha em branco)
+
+## Docs de referência
+
+- `.cursor/docs/COMPONENT_GUIDELINES.md` — anatomia de feature, exemplos, checklists
+- `.cursor/docs/DEVELOPMENT_RULES.md` — env, HTTP, TanStack Query, providers

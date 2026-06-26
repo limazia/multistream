@@ -1,0 +1,54 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Require NPM_TOKEN for @camino-tec private packages
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -z "${NPM_TOKEN}" ]; then
+            echo "::error::Defina o secret NPM_TOKEN (token npm com leitura aos pacotes da org @camino-tec). Sem ele o install falha com 404."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "lts/*"
+          cache: yarn
+
+      - name: Install dependencies
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          printf '%s\n' \
+            '@camino-tec:registry=https://registry.npmjs.org/' \
+            "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" \
+            'always-auth=true' > .npmrc
+          yarn install 
+          rm -f .npmrc
+
+      - name: Release with Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          HUSKY: 0
+        run: npx semantic-release

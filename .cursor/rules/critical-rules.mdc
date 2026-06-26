@@ -1,0 +1,55 @@
+---
+description: Mandatory project setup, validation, and tracking rules
+alwaysApply: true
+---
+
+# Critical Development Rules
+
+Resumo mandatório de runtime e integrações. Detalhes, exemplos e tabelas → `.cursor/docs/DEVELOPMENT_RULES.md`.
+
+## Bootstrap do projeto
+
+- Novo projeto a partir do template → `/init` em chat **modo Agent**
+- `/init` configura metadados, indexação e OG — ver `.cursor/commands/init.md`
+
+## Root mounting
+
+- `index.html`: `<div id="app"></div>` · `src/main.tsx`: `document.getElementById("app")`
+- Id fixo — **não** troque por `root`, `mfe`, `{nome}-root` ou similar
+- Mismatch entre os dois arquivos é blocker
+
+## Validação de parâmetros
+
+- Nunca confie em inputs opcionais (props, URL/query, eventos, payloads de API)
+- Guard clauses / early returns antes de consumir valores
+- Zod para dados externos — HTTP: `schema.safeParse(data)` + erro descritivo em falha
+- UI de estado inválido → `src/shared/components/states/` (crie ali se reutilizável)
+
+## Validação de env
+
+- Toda variável em `src/env.ts` (schema Zod) **antes** de usar
+- Acesse via `env` de `@/env` — nunca `import.meta.env` direto
+- `App` bloqueia boot com `ErrorLayout` quando `envIsValid === false` — não burle
+
+## HTTP
+
+- Instância `api` de `@lib` — nunca `axios` direto
+- Uma função por endpoint em `src/features/{feature}/http/` (ou `src/shared/http/` se reutilizado)
+- Tipe parâmetros e retorno · valide resposta com Zod (`safeParse`)
+
+## TanStack Query
+
+- Toda query/mutation em hook `use*` na pasta `hooks/` da feature
+- `queryKey` estável e descritivo · `enabled: !!param` para inputs opcionais
+- Renomeie retorno com prefixo do recurso (`users`, `isLoadingUsers`, `refetchUsers`)
+
+## Providers
+
+- Novos providers via `ComposeProviders([...])` em `src/app/providers/index.tsx`
+- `OuterProviders` (sem Router) vs `InnerProviders` (com Router)
+- Cada provider em `src/app/providers/wrappers/` + barrel `wrappers/index.ts`
+
+## Docs de referência
+
+- `.cursor/docs/DEVELOPMENT_RULES.md` — regras detalhadas com exemplos
+- `.cursor/docs/COMPONENT_GUIDELINES.md` — estrutura de pastas e anatomia de feature
